@@ -27,7 +27,14 @@ var Auth = (function () {
     return refresh()
   }
 
-  async function login (email, password) {
+  function normalizeLoginEmail (identifier) {
+    var value = String(identifier || '').trim()
+    if (value.toLowerCase() === 'travel') return 'travel@thtravel.local'
+    return value
+  }
+
+  async function login (identifier, password) {
+    var email = normalizeLoginEmail(identifier)
     var result = await thSupabase.auth.signInWithPassword({ email: email, password: password })
     if (result.error) return { ok: false, message: result.error.message }
 
