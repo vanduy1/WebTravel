@@ -24,6 +24,7 @@
 
   var editingId = ''
   var editingPage = 'about'
+  var authMode = 'login'
   var filters = { query: '', category: '', sort: 'new' }
 
   /* ===== Điều hướng ===== */
@@ -108,26 +109,73 @@
   /* ===== Phân quyền ===== */
 
   function refreshAuth () {
-    UI.applyRole(Auth.isLoggedIn(), Auth.currentUser() || 'travel')
+    UI.applyRole(Auth.isLoggedIn(), Auth.currentUser() || 'Tài khoản')
     route()
   }
 
-  loginForm.addEventListener('submit', function (ev) {
-    ev.preventDefault()
+  function setAuthMode (mode) {
+    authMode = mode
+    var isSignup = mode === 'signup'
+    document.getElementById('auth-title').textContent = isSignup ? 'Tạo tài khoản' : 'Đăng nhập quản trị'
+    document.getElementById('auth-subtitle').textContent = isSignup
+      ? 'Đăng ký bằng email hợp lệ. Tài khoản mới chưa có quyền quản trị.'
+      : 'Đăng nhập bằng email đã được cấp quyền quản trị.'
+    document.getElementById('btn-auth-submit').textContent = isSignup ? 'Đăng ký' : 'Đăng nhập'
+    document.getElementById('btn-auth-mode').textContent = isSignup
+      ? 'Đã có tài khoản? Đăng nhập'
+      : 'Chưa có tài khoản? Đăng ký'
+    document.getElementById('l-pass').autocomplete = isSignup ? 'new-password' : 'current-password'
+    document.getElementById('err-login').textContent = ''
+  }
 
-    var username = document.getElementById('l-user').value.trim()
+  document.getElementById('btn-auth-mode').addEventListener('click', function () {
+    setAuthMode(authMode === 'login' ? 'signup' : 'login')
+  })
+
+  loginForm.addEventListener('submit', async function (ev) {
+    ev.preventDefault()
+    var email = document.getElementById('l-user').value.trim()
     var password = document.getElementById('l-pass').value
 
-    if (!Auth.login(username, password)) {
-      document.getElementById('err-login').textContent = 'Sai tên đăng nhập hoặc mật khẩu.'
+    if (!email || !password) {
+      document.getElementById('err-login').textContent = 'Hãy nhập email và mật khẩu.'
+      return
+    }
+    if (authMode === 'signup' && password.length < 8) {
+      document.getElementById('err-login').textContent = 'Mật khẩu cần tối thiểu 8 ký tự.'
       return
     }
 
-    document.getElementById('err-login').textContent = ''
-    document.getElementById('l-user').value = ''
-    document.getElementById('l-pass').value = ''
-    window.location.hash = '#/'
-    refreshAuth()
+    var submitButton = document.getElementById('btn-auth-submit')
+    submitButton.disabled = true
+    try {
+      if (authMode === 'signup') {
+        var signup = await Auth.signUp(email, password)
+        if (!signup.ok) {
+          document.getElementById('err-login').textContent = signup.message
+          return
+        }
+        document.getElementById('err-login').textContent = signup.confirmationRequired
+          ? 'Đã tạo tài khoản. Hãy kiểm tra email để xác nhận, sau đó liên hệ quản trị viên cấp quyền.'
+          : 'Đã tạo tài khoản. Tài khoản chưa có quyền quản trị; hãy liên hệ quản trị viên để được cấp quyền.'
+        loginForm.reset()
+        return
+      }
+
+      var login = await Auth.login(email, password)
+      if (!login.ok) {
+        document.getElementById('err-login').textContent = login.message
+        return
+      }
+      document.getElementById('err-login').textContent = ''
+      loginForm.reset()
+      window.location.hash = '#/'
+      refreshAuth()
+    } catch (error) {
+      document.getElementById('err-login').textContent = 'Có lỗi khi xác thực: ' + error.message
+    } finally {
+      submitButton.disabled = false
+    }
   })
 
   document.getElementById('btn-toggle-pass').addEventListener('click', function (ev) {
@@ -138,10 +186,14 @@
     ev.currentTarget.classList.toggle('on', !showing)
   })
 
-  document.getElementById('btn-logout').addEventListener('click', function () {
-    Auth.logout()
-    window.location.hash = '#/'
-    refreshAuth()
+  document.getElementById('btn-logout').addEventListener('click', async function () {
+    try {
+      await Auth.logout()
+      window.location.hash = '#/'
+      refreshAuth()
+    } catch (error) {
+      window.alert('Không thể đăng xuất: ' + error.message)
+    }
   })
 
   /* ===== Lọc, tìm kiếm, sắp xếp ===== */
@@ -266,7 +318,7 @@
 
   /* ===== Lưu bài viết ===== */
 
-  postForm.addEventListener('submit', function (ev) {
+  postForm.addEventListener('submit', async function (ev) {
     ev.preventDefault()
     if (!Auth.isLoggedIn()) {
       window.location.hash = '#/login'
@@ -283,7 +335,7 @@
     data.id = editingId
     data.price = Number(data.price)
     try {
-      Store.upsert(data)
+      await Store.upsert(data)
     } catch (e) {
       UI.showErrors({ form: e.message })
       return
@@ -304,12 +356,12 @@
     return errors
   }
 
-  document.getElementById('btn-delete').addEventListener('click', function () {
+  document.getElementById('btn-delete').addEventListener('click', async function () {
     if (!editingId || !Auth.isLoggedIn()) return
     if (!window.confirm('Xoá bài viết này?')) return
 
     try {
-      Store.remove(editingId)
+      await Store.remove(editingId)
     } catch (e) {
       UI.showErrors({ form: e.message })
       return
@@ -336,7 +388,7 @@
     showView('page', backHref)
   }
 
-  pageForm.addEventListener('submit', function (ev) {
+  pageForm.addEventListener('submit', async function (ev) {
     ev.preventDefault()
     if (!Auth.isLoggedIn()) {
       window.location.hash = '#/login'
@@ -351,7 +403,7 @@
     }
 
     try {
-      Store.savePage(editingPage, data)
+      await Store.savePage(editingPage, data)
     } catch (e) {
       UI.showErrors({ page: e.message })
       return
@@ -374,12 +426,12 @@
     return errors
   }
 
-  document.getElementById('btn-page-reset').addEventListener('click', function () {
+  document.getElementById('btn-page-reset').addEventListener('click', async function () {
     if (!Auth.isLoggedIn()) return
     if (!window.confirm('Khôi phục nội dung gốc và lưu ngay?')) return
 
     try {
-      Store.savePage(editingPage, JSON.parse(JSON.stringify(DEFAULT_PAGES[editingPage])))
+      await Store.savePage(editingPage, JSON.parse(JSON.stringify(DEFAULT_PAGES[editingPage])))
     } catch (e) {
       UI.showErrors({ page: e.message })
       return
@@ -387,9 +439,20 @@
     window.location.hash = editingPage === 'about' ? '#/about' : '#/contact'
   })
 
-  /* ===== Khởi động ===== */
+  /* ===== Khởi động: nạp session và dữ liệu cloud trước khi render ===== */
 
-  window.addEventListener('hashchange', route)
-  UI.applyRole(Auth.isLoggedIn(), Auth.currentUser() || 'travel')
-  route()
+  async function boot () {
+    window.addEventListener('hashchange', route)
+    try {
+      await Promise.all([Auth.init(), Store.init()])
+    } catch (error) {
+      console.error('THTravel initialization error:', error)
+      document.getElementById('empty-text').textContent =
+        'Không tải được dữ liệu từ máy chủ. Vui lòng kiểm tra kết nối và tải lại trang.'
+    }
+    UI.applyRole(Auth.isLoggedIn(), Auth.currentUser() || 'Tài khoản')
+    route()
+  }
+
+  boot()
 })()
