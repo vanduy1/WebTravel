@@ -21,9 +21,7 @@ Kèm theo: tìm kiếm theo từ khoá, lọc theo danh mục, sắp xếp theo 
 | Thêm / sửa / xoá bài viết | ✖ | ✔ |
 | Sửa nội dung Giới thiệu, Liên hệ | ✖ | ✔ |
 
-Tài khoản: **`travel`** / **`123123`** (khai trong `js/auth.js`).
-
-Khách bấm vào card sẽ mở **màn chi tiết chỉ đọc**. Quản trị thấy thêm nút `Sửa bài viết` ở màn đó, nút `+` trên thanh tiêu đề, tab `Thêm`, nhãn `QUẢN TRỊ` cạnh tên web, và nút bút chì ở hai trang Giới thiệu / Liên hệ. Vào thẳng `#/new`, `#/edit/...`, `#/about/edit`, `#/contact/edit` khi chưa đăng nhập thì bị đẩy về màn đăng nhập.
+## Đăng nhập và phân quyền\n\nĐăng nhập dùng Supabase Auth bằng email/mật khẩu. Người dùng có thể đăng ký tài khoản, nhưng tài khoản mới chưa có quyền quản trị. Chỉ người dùng có `user_id` trong bảng `public.admin_users` mới được thêm/sửa/xoá bài viết và nội dung trang. Mật khẩu không nằm trong mã nguồn.\n\nKhách bấm vào card sẽ mở **màn chi tiết chỉ đọc**. Quản trị thấy thêm nút `Sửa bài viết` ở màn đó, nút `+` trên thanh tiêu đề, tab `Thêm`, nhãn `QUẢN TRỊ` cạnh tên web, và nút bút chì ở hai trang Giới thiệu / Liên hệ. Vào thẳng `#/new`, `#/edit/...`, `#/about/edit`, `#/contact/edit` khi chưa đăng nhập thì bị đẩy về màn đăng nhập.
 
 Phiên đăng nhập lưu ở `localStorage` khoá `wd_session`, nên đóng trình duyệt mở lại vẫn còn; bấm `Đăng xuất` trong menu trượt để thoát.
 
@@ -106,20 +104,4 @@ Khoảng 1 phút sau web chạy ở `https://<tài-khoản>.github.io/<tên-repo
 
 Repo phải để **Public** thì Pages mới bật được với tài khoản miễn phí.
 
-## Lưu dữ liệu
-
-Bài viết lưu trong `localStorage` của trình duyệt, khoá `wd_posts`.
-
-**Dữ liệu nằm riêng trên từng thiết bị.** Bài viết bạn thêm trên laptop không hiện trên điện thoại, và người khác mở link cũng chỉ thấy dữ liệu của chính họ. Muốn nhiều người xem chung một danh sách thì phải có server và database — nằm ngoài phạm vi bản này.
-
-### Dữ liệu mẫu
-
-Người mở web lần đầu (chưa có gì trong `localStorage`) sẽ thấy 4 hành trình mẫu khai báo trong `js/seed.js`. Sửa file đó rồi push lại là đổi được nội dung mặc định.
-
-Ảnh trong `seed.js` là ảnh nền SVG tự vẽ chứ không phải ảnh thật, để repo nhẹ và chạy được khi không có mạng. Muốn dùng ảnh thật thì thay trường `image` bằng chuỗi base64 (thêm bài trên web rồi copy từ DevTools → Application → Local Storage → `wd_posts`) hoặc bằng URL ảnh trên internet.
-
-Cờ `wd_seeded` đánh dấu đã đổ dữ liệu mẫu một lần, để ai tự xoá hết bài thì không bị đổ lại.
-
-### Ảnh tải lên
-
-Ảnh chọn từ máy được vẽ lại qua `<canvas>` (rộng tối đa 800px, JPEG 70%) rồi lưu dưới dạng base64. Không nén thì ảnh gốc từ điện thoại 3–5MB sẽ làm tràn hạn mức ~5MB của `localStorage` chỉ sau một hai bài. Khi tràn, web báo "Bộ nhớ trình duyệt đã đầy..." thay vì mất dữ liệu âm thầm.
+## Lưu dữ liệu\n\n- Bài viết và nội dung trang Giới thiệu/Liên hệ được lưu trong Supabase Postgres.\n- Ảnh được nén JPEG trong trình duyệt và lưu trong bucket `travel-images` của Supabase Storage.\n- Người xem có thể đọc nội dung công khai; thao tác ghi được bảo vệ bằng RLS và bảng `admin_users`.\n- `supabase-client.js` chỉ chứa Project URL và Publishable Key. Không đưa `service_role` hoặc secret key vào frontend.\n\n## Cấp quyền admin lần đầu\n\n1. Mở `#/login`, chọn **Chưa có tài khoản? Đăng ký**, tạo tài khoản bằng email thật và mật khẩu tối thiểu 8 ký tự.\n2. Xác nhận email nếu Supabase yêu cầu.\n3. Chủ project cấp quyền quản trị bằng cách thêm UUID tài khoản vào `public.admin_users`. Các tài khoản đăng ký khác không tự có quyền quản trị.\n
