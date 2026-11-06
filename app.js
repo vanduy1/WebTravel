@@ -156,7 +156,7 @@
           return
         }
         document.getElementById('err-login').textContent = signup.confirmationRequired
-          ? 'Đã tạo tài khoản. Hãy kiểm tra email để xác nhận, sau đó liên hệ quản trị viên cấp quyền.'
+          ? 'Đã tạo tài khoản. Hãy xác nhận email (nếu được yêu cầu), rồi nhắn mình email đăng ký để mình cấp quyền quản trị.'
           : 'Đã tạo tài khoản. Tài khoản chưa có quyền quản trị; hãy liên hệ quản trị viên để được cấp quyền.'
         loginForm.reset()
         return
