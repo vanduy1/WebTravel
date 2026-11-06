@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0e2b47">
+  <title>THTravel</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ===== Menu trượt ===== -->
+  <div id="drawer-overlay" class="drawer-overlay"></div>
+
+  <aside id="drawer" class="drawer" aria-label="Menu">
+    <div class="drawer-head">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M2 14l20-7-4 11-5-3-2 5-1.5-5z"/></svg>
+      </span>
+      <div>
+        <p class="brand-name">TH<span class="brand-accent">Travel</span></p>
+        <p class="brand-sub">Hành trình của bạn</p>
+      </div>
+    </div>
+
+    <nav class="drawer-nav">
+      <a href="#/" data-nav="#/">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
+        Trang chủ
+      </a>
+      <a href="#/new" data-nav="#/new" data-auth="in">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        Thêm bài viết
+      </a>
+      <a href="#/about" data-nav="#/about">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
+        Giới thiệu
+      </a>
+      <a href="#/contact" data-nav="#/contact">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a1 1 0 0 1-1 1A15 15 0 0 1 4 5a1 1 0 0 1 1-1z"/></svg>
+        Liên hệ
+      </a>
+    </nav>
+
+    <div class="drawer-user">
+      <div data-auth="in">
+        <p class="drawer-user-label">Đang đăng nhập</p>
+        <p class="drawer-user-name"><span id="drawer-user-name">travel</span> · Quản trị</p>
+        <button type="button" id="btn-logout" class="btn btn-ghost btn-sm btn-block">Đăng xuất</button>
+      </div>
+      <a class="btn btn-primary btn-sm btn-block" href="#/login" data-auth="out">Đăng nhập quản trị</a>
+    </div>
+
+    <p id="drawer-foot" class="drawer-foot"></p>
+  </aside>
+
+  <!-- ===== Màn danh sách ===== -->
+  <section id="view-list" class="view">
+    <header class="hero">
+      <div class="hero-bg" aria-hidden="true"></div>
+      <div class="hero-inner">
+        <button type="button" class="btn-icon" data-drawer-open aria-label="Mở menu">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+        <div class="brand">
+          <div>
+            <p class="brand-name">TH<span class="brand-accent">Travel</span></p>
+            <p class="brand-sub">
+              <span class="role-chip" data-auth="in">Quản trị</span>
+              <span id="hero-count">Khám phá hành trình của bạn</span>
+            </p>
+          </div>
+        </div>
+        <a class="btn-icon" href="#/new" aria-label="Thêm bài viết" data-auth="in">
+          <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+        </a>
+      </div>
+
+      <div class="searchbar">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+        <input type="search" id="f-search" class="search-input" autocomplete="off"
+          placeholder="Tìm theo tiêu đề, nơi khởi hành...">
+        <button type="button" id="btn-clear-search" class="search-clear hidden" aria-label="Xoá từ khoá">
+          <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="list-wrap">
+      <div id="chips" class="chips">
+        <button type="button" class="chip on" data-category="">Tất cả</button>
+        <button type="button" class="chip" data-category="Trong nước">Trong nước</button>
+        <button type="button" class="chip" data-category="Nước ngoài">Nước ngoài</button>
+        <button type="button" class="chip" data-category="Combo">Combo</button>
+        <button type="button" class="chip" data-category="Nghỉ dưỡng">Nghỉ dưỡng</button>
+      </div>
+
+      <div class="section-head">
+        <div>
+          <h2 class="section-title">Hành trình nổi bật</h2>
+          <span id="section-count" class="section-count"></span>
+        </div>
+        <select id="f-sort" class="sort-select" aria-label="Sắp xếp">
+          <option value="new">Mới nhất</option>
+          <option value="price-asc">Giá thấp → cao</option>
+          <option value="price-desc">Giá cao → thấp</option>
+        </select>
+      </div>
+
+      <div id="empty" class="empty hidden">
+        <span class="empty-art" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M2 14l20-7-4 11-5-3-2 5-1.5-5z"/></svg>
+        </span>
+        <p id="empty-title" class="empty-title">Chưa có hành trình nào</p>
+        <p id="empty-text" class="empty-text">Thêm bài viết đầu tiên để bắt đầu.</p>
+        <a id="empty-action" class="btn btn-primary" href="#/new" data-auth="in">Thêm bài viết</a>
+      </div>
+
+      <div id="list"></div>
+    </main>
+  </section>
+
+  <!-- ===== Màn chi tiết hành trình (ai cũng xem được) ===== -->
+  <section id="view-detail" class="view hidden">
+    <header class="hero hero-sm">
+      <div class="hero-bg" aria-hidden="true"></div>
+      <div class="hero-inner">
+        <a class="btn-icon" href="#/" aria-label="Quay lại">
+          <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+        </a>
+        <h1 class="hero-title">Chi tiết hành trình</h1>
+      </div>
+    </header>
+    <main class="page-wrap" id="detail-body"></main>
+  </section>
+
+  <!-- ===== Màn thêm / sửa bài viết (chỉ khi đã đăng nhập) ===== -->
+  <section id="view-form" class="view hidden">
+    <header class="hero hero-sm">
+      <div class="hero-bg" aria-hidden="true"></div>
+      <div class="hero-inner">
+        <a class="btn-icon" href="#/" aria-label="Quay lại">
+          <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+        </a>
+        <h1 id="form-title" class="hero-title">Thêm bài viết</h1>
+      </div>
+    </header>
+
+    <main class="form-wrap">
+      <form id="post-form" novalidate>
+
+        <section class="panel">
+          <h2 class="panel-title">Ảnh bìa</h2>
+          <div id="img-preview" class="img-preview">
+            <span class="img-preview-hint">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17l5-5 4 4 3-3 6 6M3 5h18v14H3z"/></svg>
+              Chưa chọn ảnh
+            </span>
+          </div>
+          <div class="img-actions">
+            <label class="btn btn-ghost btn-sm">
+              Chọn ảnh
+              <input type="file" id="f-image" accept="image/*" hidden>
+            </label>
+            <button type="button" id="btn-clear-image" class="btn-text hidden">Bỏ ảnh</button>
+          </div>
+          <p id="err-image" class="err"></p>
+        </section>
+
+        <section class="panel">
+          <h2 class="panel-title">Thông tin hành trình</h2>
+
+          <div class="field">
+            <label class="label" for="f-title">Tiêu đề <span class="req">*</span></label>
+            <textarea id="f-title" class="input" rows="2" maxlength="120"
+              placeholder="Singapore: Combo 3N2Đ VMB + Lưu trú khách sạn Hotel..."></textarea>
+            <p id="err-title" class="err"></p>
+          </div>
+
+          <div class="field">
+            <label class="label" for="f-category">Danh mục</label>
+            <select id="f-category" class="input">
+              <option value="">-- Chọn --</option>
+              <option>Trong nước</option>
+              <option>Nước ngoài</option>
+              <option>Combo</option>
+              <option>Nghỉ dưỡng</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label class="label">Đánh giá</label>
+            <div id="f-rating" class="rating-pick" role="group" aria-label="Đánh giá">
+              <button type="button" class="star" data-value="1" aria-label="1 sao">★</button>
+              <button type="button" class="star" data-value="2" aria-label="2 sao">★</button>
+              <button type="button" class="star" data-value="3" aria-label="3 sao">★</button>
+              <button type="button" class="star" data-value="4" aria-label="4 sao">★</button>
+              <button type="button" class="star" data-value="5" aria-label="5 sao">★</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="label" for="f-departure">Nơi khởi hành</label>
+            <input type="text" id="f-departure" class="input" maxlength="60" placeholder="TP. Hồ Chí Minh">
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label class="label" for="f-transport">Phương tiện</label>
+              <select id="f-transport" class="input">
+                <option value="">-- Chọn --</option>
+                <option>Máy bay</option>
+                <option>Ô tô</option>
+                <option>Tàu hoả</option>
+                <option>Tàu thuỷ</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label class="label" for="f-price">Giá từ (đ) <span class="req">*</span></label>
+              <input type="text" id="f-price" class="input" inputmode="numeric" maxlength="15" placeholder="9,790,000">
+              <p id="err-price" class="err"></p>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="label" for="f-hotel">Hạng khách sạn</label>
+            <select id="f-hotel" class="input">
+              <option value="">-- Chọn --</option>
+              <option>Khách sạn 3*</option>
+              <option>Khách sạn 4*</option>
+              <option>Khách sạn 5*</option>
+              <option>Khách sạn tương đương 3*</option>
+              <option>Khách sạn tương đương 4*</option>
+              <option>Khách sạn tương đương 5*</option>
+            </select>
+          </div>
+        </section>
+
+        <p id="err-form" class="err err-form"></p>
+
+        <button type="button" id="btn-delete" class="btn btn-danger btn-block hidden">Xoá bài viết</button>
+
+        <div class="actionbar">
+          <a class="btn btn-ghost" href="#/">Huỷ</a>
+          <button type="submit" class="btn btn-primary">Lưu bài viết</button>
+        </div>
+      </form>
+    </main>
+  </section>
+
+  <!-- ===== Màn giới thiệu ===== -->
+  <section id="view-about" class="view hidden">
+    <header class="hero hero-sm">
+      <div class="hero-bg" aria-hidden="true"></div>
+      <div class="hero-inner">
+        <button type="button" class="btn-icon" data-drawer-open aria-label="Mở menu">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+        <h1 class="hero-title">Giới thiệu</h1>
+        <a class="btn-icon" href="#/about/edit" aria-label="Sửa trang giới thiệu" data-auth="in">
+          <svg viewBox="0 0 24 24"><path d="M4 20h4l10-10-4-4L4 16zM14 6l4 4"/></svg>
+        </a>
+      </div>
+    </header>
+    <main class="page-wrap" id="about-body"></main>
+  </section>
+
+  <!-- ===== Màn liên hệ ===== -->
+  <section id="view-contact" class="view hidden">
+    <header class="hero hero-sm">
+      <div class="hero-bg" aria-hidden="true"></div>
+      <div class="hero-inner">
+        <button type="button" class="btn-icon" data-drawer-open aria-label="Mở menu">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+        <h1 class="hero-title">Liên hệ</h1>
+        <a class="btn-icon" href="#/contact/edit" aria-label="Sửa trang liên hệ" data-auth="in">
+          <svg viewBox="0 0 24 24"><path d="M4 20h4l10-10-4-4L4 16zM14 6l4 4"/></svg>
+        </a>
+      </div>
+    </header>
+    <main class="page-wrap" id="contact-body"></main>
+  </section>
+
+  <!-- ===== Màn sửa nội dung trang (chỉ khi đã đăng nhập) ===== -->
+  <section id="view-page" class="view hidden">
+    <header class="hero hero-sm">
+      <div class="hero-bg" aria-hidden="true"></div>
+      <div class="hero-inner">
+        <a id="page-back" class="btn-icon" href="#/about" aria-label="Quay lại">
+          <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+        </a>
+        <h1 id="page-form-title" class="hero-title">Sửa trang</h1>
+      </div>
+    </header>
+
+    <main class="form-wrap">
+      <form id="page-form" novalidate>
+
+        <!-- Giới thiệu -->
+        <div id="panel-about" class="hidden">
+          <section class="panel">
+            <h2 class="panel-title">Phần mở đầu</h2>
+            <div class="field">
+              <label class="label" for="pa-title">Tiêu đề <span class="req">*</span></label>
+              <input type="text" id="pa-title" class="input" maxlength="80">
+              <p id="err-pa-title" class="err"></p>
+            </div>
+            <div class="field">
+              <label class="label" for="pa-intro">Giới thiệu <span class="req">*</span></label>
+              <textarea id="pa-intro" class="input" rows="5" maxlength="600"></textarea>
+              <p id="err-pa-intro" class="err"></p>
+            </div>
+          </section>
+
+          <section class="panel">
+            <h2 class="panel-title">Điểm mạnh 1</h2>
+            <div class="field">
+              <label class="label" for="pa-f0-title">Tiêu đề</label>
+              <input type="text" id="pa-f0-title" class="input" maxlength="60">
+            </div>
+            <div class="field">
+              <label class="label" for="pa-f0-text">Mô tả</label>
+              <textarea id="pa-f0-text" class="input" rows="2" maxlength="200"></textarea>
+            </div>
+          </section>
+
+          <section class="panel">
+            <h2 class="panel-title">Điểm mạnh 2</h2>
+            <div class="field">
+              <label class="label" for="pa-f1-title">Tiêu đề</label>
+              <input type="text" id="pa-f1-title" class="input" maxlength="60">
+            </div>
+            <div class="field">
+              <label class="label" for="pa-f1-text">Mô tả</label>
+              <textarea id="pa-f1-text" class="input" rows="2" maxlength="200"></textarea>
+            </div>
+          </section>
+
+          <section class="panel">
+            <h2 class="panel-title">Điểm mạnh 3</h2>
+            <div class="field">
+              <label class="label" for="pa-f2-title">Tiêu đề</label>
+              <input type="text" id="pa-f2-title" class="input" maxlength="60">
+            </div>
+            <div class="field">
+              <label class="label" for="pa-f2-text">Mô tả</label>
+              <textarea id="pa-f2-text" class="input" rows="2" maxlength="200"></textarea>
+            </div>
+          </section>
+        </div>
+
+        <!-- Liên hệ -->
+        <div id="panel-contact" class="hidden">
+          <section class="panel">
+            <h2 class="panel-title">Phần mở đầu</h2>
+            <div class="field">
+              <label class="label" for="pc-title">Tiêu đề <span class="req">*</span></label>
+              <input type="text" id="pc-title" class="input" maxlength="80">
+              <p id="err-pc-title" class="err"></p>
+            </div>
+            <div class="field">
+              <label class="label" for="pc-intro">Mô tả</label>
+              <textarea id="pc-intro" class="input" rows="3" maxlength="300"></textarea>
+            </div>
+          </section>
+
+          <section class="panel">
+            <h2 class="panel-title">Thông tin liên hệ</h2>
+            <div class="field">
+              <label class="label" for="pc-phone">Điện thoại</label>
+              <input type="text" id="pc-phone" class="input" maxlength="30">
+            </div>
+            <div class="field">
+              <label class="label" for="pc-email">Email</label>
+              <input type="text" id="pc-email" class="input" maxlength="80">
+              <p id="err-pc-email" class="err"></p>
+            </div>
+            <div class="field">
+              <label class="label" for="pc-address">Văn phòng</label>
+              <textarea id="pc-address" class="input" rows="2" maxlength="200"></textarea>
+            </div>
+            <div class="field">
+              <label class="label" for="pc-hours">Giờ làm việc</label>
+              <input type="text" id="pc-hours" class="input" maxlength="80">
+            </div>
+          </section>
+        </div>
+
+        <p id="err-page" class="err err-form"></p>
+
+        <button type="button" id="btn-page-reset" class="btn btn-danger btn-block">Khôi phục nội dung gốc</button>
+
+        <div class="actionbar">
+          <a id="page-cancel" class="btn btn-ghost" href="#/about">Huỷ</a>
+          <button type="submit" class="btn btn-primary">Lưu nội dung</button>
+        </div>
+      </form>
+    </main>
+  </section>
+
+  <!-- ===== Màn đăng nhập ===== -->
+  <section id="view-login" class="view hidden">
+    <div class="login-wrap">
+      <a class="login-back" href="#/" aria-label="Quay lại">
+        <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+      </a>
+
+      <div class="login-card">
+        <span class="brand-mark login-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M2 14l20-7-4 11-5-3-2 5-1.5-5z"/></svg>
+        </span>
+        <h1 class="login-title">Đăng nhập quản trị</h1>
+        <p class="login-sub">Đăng nhập để thêm, sửa bài viết và nội dung trang.</p>
+
+        <form id="login-form" novalidate>
+          <div class="field">
+            <label class="label" for="l-user">Tên đăng nhập</label>
+            <input type="text" id="l-user" class="input" autocomplete="username" autocapitalize="off" spellcheck="false">
+          </div>
+
+          <div class="field">
+            <label class="label" for="l-pass">Mật khẩu</label>
+            <div class="pass-wrap">
+              <input type="password" id="l-pass" class="input" autocomplete="current-password">
+              <button type="button" id="btn-toggle-pass" class="pass-toggle" aria-label="Hiện mật khẩu">
+                <svg viewBox="0 0 24 24"><path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6-10-6-10-6z"/><circle cx="12" cy="12" r="2.8"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <p id="err-login" class="err err-form"></p>
+
+          <button type="submit" class="btn btn-primary btn-block">Đăng nhập</button>
+        </form>
+
+        <a class="login-skip" href="#/">Tiếp tục xem, không đăng nhập</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Thanh menu đáy ===== -->
+  <nav id="tabbar" class="tabbar" aria-label="Điều hướng chính">
+    <a href="#/" data-nav="#/">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
+      <span>Trang chủ</span>
+    </a>
+    <a href="#/new" data-nav="#/new" data-auth="in">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+      <span>Thêm</span>
+    </a>
+    <a href="#/about" data-nav="#/about">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
+      <span>Giới thiệu</span>
+    </a>
+    <a href="#/contact" data-nav="#/contact">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a1 1 0 0 1-1 1A15 15 0 0 1 4 5a1 1 0 0 1 1-1z"/></svg>
+      <span>Liên hệ</span>
+    </a>
+    <a href="#/login" data-nav="#/login" data-auth="out">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h4a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1h-4M10 17l5-5-5-5M15 12H3"/></svg>
+      <span>Đăng nhập</span>
+    </a>
+  </nav>
+
+  <script src="js/seed.js"></script>
+  <script src="js/pages.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
